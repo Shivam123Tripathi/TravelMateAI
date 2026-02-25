@@ -1,0 +1,22 @@
+# Maven
+/target/
+
+# Logs
+*.log
+
+# Compiled files
+*.class
+
+# IDE
+/.idea/
+/.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Environment files
+.env
+
+# Application properties (IMPORTANT)
+src/main/resources/application.properties
