@@ -51,6 +51,11 @@ public class Trip {
     @Column(name = "total_seats", nullable = false)
     private Integer totalSeats;
 
+    @Version
+    @Column(name = "version")
+    @Builder.Default
+    private Long version = 0L;
+
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
@@ -70,20 +75,26 @@ public class Trip {
     }
 
     /**
-     * Reduce available seats after booking
+     * Reduce available seats after booking.
+     * Throws IllegalStateException if insufficient seats.
      */
     public void reduceSeats(int seats) {
-        if (this.availableSeats >= seats) {
-            this.availableSeats -= seats;
+        if (this.availableSeats < seats) {
+            throw new IllegalStateException(
+                    "Cannot reduce seats: requested " + seats + ", available " + this.availableSeats);
         }
+        this.availableSeats -= seats;
     }
 
     /**
-     * Increase available seats after cancellation
+     * Increase available seats after cancellation.
+     * Throws IllegalStateException if result exceeds total seats.
      */
     public void increaseSeats(int seats) {
-        if (this.availableSeats + seats <= this.totalSeats) {
-            this.availableSeats += seats;
+        if (this.availableSeats + seats > this.totalSeats) {
+            throw new IllegalStateException(
+                    "Cannot increase seats: would exceed total seats (" + this.totalSeats + ")");
         }
+        this.availableSeats += seats;
     }
 }

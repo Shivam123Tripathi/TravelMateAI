@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * TravelMate AI Application - Main Entry Point
@@ -14,6 +15,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  * - User authentication with JWT
  * - Trip management
  * - Booking system with email notifications
+ * - Seat locking system with automatic expiration
  * - Admin reporting and analytics
  * 
  * @author TravelMate AI Team
@@ -21,6 +23,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
  */
 @SpringBootApplication
 @EnableJpaAuditing
+@EnableScheduling
 @Slf4j
 public class TravelMateAiApplication {
 
@@ -28,8 +31,8 @@ public class TravelMateAiApplication {
         SpringApplication.run(TravelMateAiApplication.class, args);
         log.info("========================================");
         log.info("  TravelMate AI Backend Started!");
-        log.info("  Swagger UI: http://localhost:8080/swagger-ui.html");
-        log.info("  API Docs:   http://localhost:8080/api-docs");
+        log.info("  Base URL: http://localhost:8080");
+        log.info("  API Base: http://localhost:8080/api");
         log.info("========================================");
     }
 }

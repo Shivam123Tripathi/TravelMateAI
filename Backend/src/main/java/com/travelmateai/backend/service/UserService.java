@@ -10,6 +10,8 @@ import com.travelmateai.backend.entity.User;
 import com.travelmateai.backend.exception.DuplicateResourceException;
 import com.travelmateai.backend.exception.ResourceNotFoundException;
 import com.travelmateai.backend.exception.UnauthorizedException;
+import com.travelmateai.backend.repository.BookingRepository;
+import com.travelmateai.backend.repository.SeatLockRepository;
 import com.travelmateai.backend.repository.UserRepository;
 import com.travelmateai.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
+    private final SeatLockRepository seatLockRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
@@ -151,6 +155,10 @@ public class UserService {
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User", "id", userId);
         }
+
+        // Delete child records first to avoid FK constraint violations
+        seatLockRepository.deleteByUserId(userId);
+        bookingRepository.deleteByUserId(userId);
 
         userRepository.deleteById(userId);
         log.info("User deleted: {}", userId);

@@ -46,17 +46,17 @@ spring:
 # -------------------- JWT Configuration --------------------
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 86400000   # 24 hours (in milliseconds)
+  expiration: 7200000   # 2 hours (in milliseconds)
 
-# -------------------- Swagger / OpenAPI Configuration --------------------
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    operationsSorter: method
-    tagsSorter: alpha
+# -------------------- Seat Lock Configuration --------------------
+seat:
+  lock:
+    duration-minutes: 5   # Seats are locked for 5 minutes by default
+    schedule-rate-ms: 60000   # Scheduler runs every 60 seconds
+
+# -------------------- CORS Configuration --------------------
+cors:
+  allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:8081
 
 # -------------------- Logging Configuration --------------------
 logging:

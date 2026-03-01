@@ -1,7 +1,6 @@
 package com.travelmateai.backend.service;
 
 import com.travelmateai.backend.entity.Booking;
-import com.travelmateai.backend.entity.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,13 +11,17 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
  * Service for sending email notifications.
  * Uses async processing to avoid blocking main thread.
+ * Data is extracted from entities before the async boundary to avoid
+ * LazyInitializationException on detached Hibernate proxies.
  */
 @Service
 @RequiredArgsConstructor
@@ -31,41 +34,70 @@ public class EmailService {
     private String fromEmail;
 
     /**
-     * Send booking confirmation email
+     * Send booking confirmation email.
+     * Extracts all needed data before entering the async boundary.
      */
-    @Async
     public void sendBookingConfirmationEmail(Booking booking) {
-        try {
-            User user = booking.getUser();
-            String subject = "Booking Confirmed - TravelMate AI";
+        // Extract data while Hibernate session is still open
+        String userName = booking.getUser().getName();
+        String userEmail = booking.getUser().getEmail();
+        Long bookingId = booking.getId();
+        String tripTitle = booking.getTrip().getTitle();
+        String tripDestination = booking.getTrip().getDestination();
+        int numberOfSeats = booking.getNumberOfSeats();
+        BigDecimal totalPrice = booking.getTotalPrice();
+        LocalDateTime bookingDate = booking.getBookingDate();
 
-            String htmlContent = buildConfirmationEmailTemplate(booking);
-
-            sendHtmlEmail(user.getEmail(), subject, htmlContent);
-            log.info("Booking confirmation email sent to: {}", user.getEmail());
-
-        } catch (Exception e) {
-            log.error("Failed to send booking confirmation email: {}", e.getMessage());
-            // Don't throw exception - email failure shouldn't break booking transaction
-        }
+        // Send asynchronously with extracted data
+        sendConfirmationAsync(userName, userEmail, bookingId, tripTitle,
+                tripDestination, numberOfSeats, totalPrice, bookingDate);
     }
 
     /**
-     * Send booking cancellation email
+     * Send booking cancellation email.
+     * Extracts all needed data before entering the async boundary.
      */
-    @Async
     public void sendBookingCancellationEmail(Booking booking) {
+        // Extract data while Hibernate session is still open
+        String userName = booking.getUser().getName();
+        String userEmail = booking.getUser().getEmail();
+        Long bookingId = booking.getId();
+        String tripTitle = booking.getTrip().getTitle();
+        BigDecimal totalPrice = booking.getTotalPrice();
+
+        // Send asynchronously with extracted data
+        sendCancellationAsync(userName, userEmail, bookingId, tripTitle, totalPrice);
+    }
+
+    @Async
+    protected void sendConfirmationAsync(String userName, String userEmail, Long bookingId,
+            String tripTitle, String tripDestination, int numberOfSeats,
+            BigDecimal totalPrice, LocalDateTime bookingDate) {
         try {
-            User user = booking.getUser();
-            String subject = "Booking Cancelled - TravelMate AI";
+            String subject = "Booking Confirmed - TravelMate AI";
+            String htmlContent = buildConfirmationEmailTemplate(
+                    userName, bookingId, tripTitle, tripDestination,
+                    numberOfSeats, totalPrice, bookingDate);
 
-            String htmlContent = buildCancellationEmailTemplate(booking);
-
-            sendHtmlEmail(user.getEmail(), subject, htmlContent);
-            log.info("Booking cancellation email sent to: {}", user.getEmail());
-
+            sendHtmlEmail(userEmail, subject, htmlContent);
+            log.info("Booking confirmation email sent to: {}", userEmail);
         } catch (Exception e) {
-            log.error("Failed to send booking cancellation email: {}", e.getMessage());
+            log.error("Failed to send booking confirmation email to {}: {}", userEmail, e.getMessage());
+        }
+    }
+
+    @Async
+    protected void sendCancellationAsync(String userName, String userEmail,
+            Long bookingId, String tripTitle, BigDecimal totalPrice) {
+        try {
+            String subject = "Booking Cancelled - TravelMate AI";
+            String htmlContent = buildCancellationEmailTemplate(
+                    userName, bookingId, tripTitle, totalPrice);
+
+            sendHtmlEmail(userEmail, subject, htmlContent);
+            log.info("Booking cancellation email sent to: {}", userEmail);
+        } catch (Exception e) {
+            log.error("Failed to send booking cancellation email to {}: {}", userEmail, e.getMessage());
         }
     }
 
@@ -87,8 +119,10 @@ public class EmailService {
     /**
      * Build confirmation email HTML template
      */
-    private String buildConfirmationEmailTemplate(Booking booking) {
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+    private String buildConfirmationEmailTemplate(String userName, Long bookingId,
+            String tripTitle, String tripDestination, int numberOfSeats,
+            BigDecimal totalPrice, LocalDateTime bookingDate) {
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("en", "IN"));
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a");
 
         return """
@@ -155,21 +189,22 @@ public class EmailService {
             </body>
             </html>
             """.formatted(
-                booking.getUser().getName(),
-                booking.getId(),
-                booking.getTrip().getTitle(),
-                booking.getTrip().getDestination(),
-                booking.getNumberOfSeats(),
-                currencyFormat.format(booking.getTotalPrice()),
-                booking.getBookingDate().format(dateFormatter)
+                userName,
+                bookingId,
+                tripTitle,
+                tripDestination,
+                numberOfSeats,
+                currencyFormat.format(totalPrice),
+                bookingDate.format(dateFormatter)
         );
     }
 
     /**
      * Build cancellation email HTML template
      */
-    private String buildCancellationEmailTemplate(Booking booking) {
-        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+    private String buildCancellationEmailTemplate(String userName, Long bookingId,
+            String tripTitle, BigDecimal totalPrice) {
+        NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.of("en", "IN"));
 
         return """
             <!DOCTYPE html>
@@ -219,10 +254,10 @@ public class EmailService {
             </body>
             </html>
             """.formatted(
-                booking.getUser().getName(),
-                booking.getId(),
-                booking.getTrip().getTitle(),
-                currencyFormat.format(booking.getTotalPrice())
+                userName,
+                bookingId,
+                tripTitle,
+                currencyFormat.format(totalPrice)
         );
     }
 }

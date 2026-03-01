@@ -4,8 +4,6 @@ import com.travelmateai.backend.dto.request.BookingRequest;
 import com.travelmateai.backend.dto.response.ApiResponse;
 import com.travelmateai.backend.dto.response.BookingResponse;
 import com.travelmateai.backend.service.BookingService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +19,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/bookings")
 @RequiredArgsConstructor
-@Tag(name = "Booking", description = "Booking management APIs")
 public class BookingController {
 
     private final BookingService bookingService;
@@ -30,7 +27,6 @@ public class BookingController {
      * Create a new booking
      */
     @PostMapping
-    @Operation(summary = "Create booking", description = "Book a trip")
     public ResponseEntity<ApiResponse<BookingResponse>> createBooking(
             @Valid @RequestBody BookingRequest request) {
 
@@ -44,7 +40,6 @@ public class BookingController {
      * Get booking by ID
      */
     @GetMapping("/{id}")
-    @Operation(summary = "Get booking by ID", description = "Get booking details by ID")
     public ResponseEntity<ApiResponse<BookingResponse>> getBookingById(@PathVariable Long id) {
 
         BookingResponse booking = bookingService.getBookingById(id);
@@ -55,7 +50,6 @@ public class BookingController {
      * Get all bookings for a specific user (Admin or own bookings)
      */
     @GetMapping("/user/{userId}")
-    @Operation(summary = "Get user bookings", description = "Get all bookings for a user")
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getBookingsByUserId(
             @PathVariable Long userId) {
 
@@ -67,7 +61,6 @@ public class BookingController {
      * Get my bookings (for current logged-in user)
      */
     @GetMapping("/my-bookings")
-    @Operation(summary = "Get my bookings", description = "Get all bookings for current user")
     public ResponseEntity<ApiResponse<List<BookingResponse>>> getMyBookings() {
 
         List<BookingResponse> bookings = bookingService.getMyBookings();
@@ -78,7 +71,6 @@ public class BookingController {
      * Cancel a booking
      */
     @DeleteMapping("/{id}")
-    @Operation(summary = "Cancel booking", description = "Cancel a booking")
     public ResponseEntity<ApiResponse<BookingResponse>> cancelBooking(@PathVariable Long id) {
 
         BookingResponse booking = bookingService.cancelBooking(id);

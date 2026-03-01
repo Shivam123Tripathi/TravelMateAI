@@ -53,4 +53,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Check if user has already booked a specific trip.
      */
     boolean existsByUserIdAndTripIdAndStatus(Long userId, Long tripId, BookingStatus status);
+
+    /**
+     * Delete all bookings for a user (used during account deletion).
+     */
+    void deleteByUserId(Long userId);
 }
