@@ -1,0 +1,16 @@
+# =============================================
+# TravelMate AI - Development Profile
+# =============================================
+# Activated with: --spring.profiles.active=dev
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  level:
+    com.travelmateai: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG

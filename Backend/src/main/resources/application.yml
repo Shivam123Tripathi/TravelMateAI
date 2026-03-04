@@ -1,6 +1,8 @@
 # =============================================
 # TravelMate AI - Application Configuration
 # =============================================
+# All sensitive values use environment variables with safe defaults.
+# Override them via system env vars or .env files.
 
 server:
   port: 8080
@@ -11,8 +13,8 @@ spring:
 
   # -------------------- Database Configuration --------------------
   datasource:
-    url: jdbc:mysql://localhost:3306/travelmateai_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
+    url: ${DB_URL:jdbc:mysql://localhost:3306/travelmateai_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
@@ -56,13 +58,22 @@ seat:
 
 # -------------------- CORS Configuration --------------------
 cors:
-  allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:8081
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:8081}
 
 # -------------------- Logging Configuration --------------------
 logging:
   level:
     root: INFO
     com.travelmateai: DEBUG
-    org.springframework.security: DEBUG
+    org.springframework.security: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# -------------------- SpringDoc / Swagger Configuration --------------------
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs

@@ -1,8 +1,8 @@
 # TravelMate AI Backend
 
-A production-ready REST API backend for **TravelMate AI** - A smart travel assistant platform built as a Final Year B.Tech CSE project.
+A production-ready REST API backend for **TravelMate AI** — a smart travel assistant platform built as a Final Year B.Tech CSE project.
 
-> ⚠️ **Security Notice**: This project uses environment variables for all sensitive credentials. No passwords, API keys, or secrets are hardcoded. See [Getting Started](#-getting-started) for configuration.
+> ⚠️ **Security Notice**: This project uses environment variables for all sensitive credentials. No passwords, API keys, or secrets are hardcoded.
 
 ## 🚀 Features
 
@@ -13,103 +13,130 @@ A production-ready REST API backend for **TravelMate AI** - A smart travel assis
 - ✅ Secure endpoint protection
 
 ### User Management
-- ✅ User registration and login
-- ✅ Profile viewing and updating
-- ✅ Account deletion
+- ✅ Registration, login, profile update, account deletion
 
 ### Trip Management
-- ✅ Create, read, update, delete trips (Admin only for CUD)
-- ✅ Search trips by destination
-- ✅ Pagination and sorting support
-- ✅ Seat availability tracking
+- ✅ CRUD operations (Admin-only for create/update/delete)
+- ✅ Search by destination with pagination
+- ✅ Safe deletion with booking existence checks
 
 ### Booking System
-- ✅ Book trips with seat validation
-- ✅ View booking history
-- ✅ Cancel bookings with automatic seat restoration
-- ✅ Email notifications for booking confirmations and cancellations
+- ✅ Book trips with seat availability validation
+- ✅ Seat locking system (temporary seat reservation before payment)
+- ✅ Automatic seat lock expiration via scheduled jobs
+- ✅ Booking cancellation with seat restoration
+- ✅ Email notifications (confirmation & cancellation)
 
-### Admin Reports & Analytics
-- ✅ Total bookings count
-- ✅ Popular destination analytics
-- ✅ Revenue reports
-- ✅ Dashboard overview
+### Admin Analytics
+- ✅ Total bookings, popular destinations, revenue reports
+- ✅ Dashboard API with typed DTOs
 
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
-|------------|---------|
+|---|---|
 | Java 21 | Programming Language |
 | Spring Boot 3.2.3 | Application Framework |
-| Spring Security | Authentication & Authorization |
+| Spring Security + JWT | Authentication & Authorization |
 | Spring Data JPA | Database ORM |
-| MySQL | Relational Database |
-| JWT (jjwt) | Stateless Authentication Tokens |
+| MySQL 8.0 | Relational Database |
 | Lombok | Boilerplate Reduction |
+| SpringDoc OpenAPI | API Documentation (Swagger UI) |
+| Docker | Containerization |
+| JUnit 5 + Mockito | Unit Testing |
 | Maven | Build Tool |
-| Swagger/OpenAPI | API Documentation |
 
 ## 📁 Project Structure
 
 ```
 src/main/java/com/travelmateai/backend/
-├── TravelMateAiApplication.java    # Main entry point
-├── config/                         # Configuration classes
-│   ├── SecurityConfig.java         # Spring Security configuration
-│   ├── SwaggerConfig.java          # OpenAPI/Swagger configuration
-│   ├── AsyncConfig.java            # Async execution configuration
-│   └── CorsConfig.java             # CORS configuration
-├── controller/                     # REST Controllers
-│   ├── UserController.java         # User endpoints
-│   ├── TripController.java         # Trip endpoints
-│   ├── BookingController.java      # Booking endpoints
-│   └── ReportController.java       # Report endpoints
-├── service/                        # Business Logic Layer
+├── TravelMateAiApplication.java       # Main entry point
+├── config/                            # Configuration
+│   ├── SecurityConfig.java            # Spring Security + JWT filter chain
+│   ├── SwaggerConfig.java             # OpenAPI documentation setup
+│   ├── AsyncConfig.java               # Thread pool for async email
+│   └── CorsConfig.java                # CORS for frontend integration
+├── controller/                        # REST Controllers
+│   ├── UserController.java
+│   ├── TripController.java
+│   ├── BookingController.java
+│   ├── SeatLockController.java
+│   └── ReportController.java
+├── service/                           # Business Logic
 │   ├── UserService.java
 │   ├── TripService.java
 │   ├── BookingService.java
+│   ├── SeatLockService.java
+│   ├── SeatLockScheduler.java
 │   ├── ReportService.java
-│   └── EmailService.java
-├── repository/                     # Data Access Layer
-│   ├── UserRepository.java
-│   ├── TripRepository.java
-│   └── BookingRepository.java
-├── entity/                         # JPA Entities
-│   ├── User.java
-│   ├── Trip.java
-│   ├── Booking.java
-│   ├── Role.java
-│   └── BookingStatus.java
-├── dto/                            # Data Transfer Objects
-│   ├── request/                    # Request DTOs
-│   └── response/                   # Response DTOs
-├── security/                       # Security Components
-│   ├── JwtUtil.java
-│   ├── JwtAuthenticationFilter.java
-│   └── CustomUserDetailsService.java
-└── exception/                      # Exception Handling
-    ├── GlobalExceptionHandler.java
-    └── [Custom Exceptions]
+│   ├── EmailService.java
+│   └── EmailAsyncHelper.java
+├── repository/                        # Data Access (JPA)
+├── entity/                            # JPA Entities
+├── dto/                               # Request/Response DTOs
+├── security/                          # JWT utilities & filters
+└── exception/                         # Global exception handling
 ```
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Java 21
+- Maven 3.8+
+- MySQL 8.0+
+
+### Option 1: Run Locally
+
+```bash
+# 1. Create MySQL database
+mysql -u root -p -e "CREATE DATABASE travelmateai_db;"
+
+# 2. Set environment variables (PowerShell)
+$env:DB_PASSWORD="your_mysql_password"
+$env:JWT_SECRET="YourBase64Encoded256BitSecretKeyHere"
+$env:MAIL_USERNAME="your_email@gmail.com"
+$env:MAIL_PASSWORD="your_gmail_app_password"
+
+# 3. Run the application
+mvn spring-boot:run
+```
+
+### Option 2: Run with Docker
+
+```bash
+# Set required env vars
+$env:DB_PASSWORD="your_password"
+$env:JWT_SECRET="YourBase64SecretKey"
+
+# Start all services
+docker-compose up --build
+```
+
+### Access Points
+| Service | URL |
+|---|---|
+| API Base | http://localhost:8080/api |
+| Swagger UI | http://localhost:8080/swagger-ui.html |
+| API Docs (JSON) | http://localhost:8080/v3/api-docs |
 
 ## 🔌 API Endpoints
 
 ### Authentication (Public)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | POST | `/api/users/register` | Register new user |
-| POST | `/api/users/login` | Login and get JWT token |
+| POST | `/api/users/login` | Login → get JWT token |
 
-### User Management (Authenticated)
+### Users (Authenticated)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | GET | `/api/users/{id}` | Get user profile |
-| PUT | `/api/users/{id}` | Update user profile |
-| DELETE | `/api/users/{id}` | Delete user account |
+| PUT | `/api/users/{id}` | Update profile |
+| DELETE | `/api/users/{id}` | Delete account |
 
-### Trips (Public GET, Admin CUD)
+### Trips (Public GET / Admin CUD)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | GET | `/api/trips` | Get all trips (paginated) |
 | GET | `/api/trips/{id}` | Get trip by ID |
 | GET | `/api/trips/search?destination=X` | Search trips |
@@ -119,165 +146,46 @@ src/main/java/com/travelmateai/backend/
 
 ### Bookings (Authenticated)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
+|---|---|---|
 | POST | `/api/bookings` | Create booking |
-| GET | `/api/bookings/{id}` | Get booking by ID |
-| GET | `/api/bookings/my-bookings` | Get current user's bookings |
-| GET | `/api/bookings/user/{userId}` | Get user's bookings |
+| GET | `/api/bookings/{id}` | Get booking |
+| GET | `/api/bookings/my-bookings` | My bookings |
 | DELETE | `/api/bookings/{id}` | Cancel booking |
+
+### Seat Locks (Authenticated)
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/seat-locks` | Lock seats |
+| POST | `/api/seat-locks/{id}/confirm` | Confirm lock |
+| GET | `/api/seat-locks/my-locks` | My locks |
+| GET | `/api/seat-locks/my-active-locks` | My active locks |
 
 ### Reports (Admin Only)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/reports/total-bookings` | Total bookings count |
-| GET | `/api/reports/popular-destination` | Most popular destination |
-| GET | `/api/reports/revenue` | Total revenue |
-| GET | `/api/reports/dashboard` | Comprehensive dashboard |
+|---|---|---|
+| GET | `/api/reports/total-bookings` | Booking counts |
+| GET | `/api/reports/popular-destination` | Top destinations |
+| GET | `/api/reports/revenue` | Revenue summary |
+| GET | `/api/reports/dashboard` | Full dashboard |
 
-## 🚀 Getting Started
+## ⚙️ Environment Variables
 
-### Prerequisites
-- Java 21
-- Maven 3.8+
-- MySQL 8.0+
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/travelmateai-backend.git
-   cd travelmateai-backend
-   ```
-
-2. **Create MySQL Database**
-   ```sql
-   CREATE DATABASE travelmateai_db;
-   ```
-
-3. **Set Environment Variables**
-   
-   The application uses environment variables for all sensitive credentials (no hardcoding):
-   
-   **Windows PowerShell:**
-   ```powershell
-   $env:DB_PASSWORD="your_mysql_password"
-   $env:JWT_SECRET="YourBase64Encoded256BitSecretKeyHere"
-   $env:MAIL_USERNAME="your_email@gmail.com"
-   $env:MAIL_PASSWORD="your_gmail_app_password"
-   ```
-   
-   **Linux/macOS:**
-   ```bash
-   export DB_PASSWORD="your_mysql_password"
-   export JWT_SECRET="YourBase64Encoded256BitSecretKeyHere"
-   export MAIL_USERNAME="your_email@gmail.com"
-   export MAIL_PASSWORD="your_gmail_app_password"
-   ```
-   
-   | Variable | Description |
-   |----------|-------------|
-   | `DB_PASSWORD` | MySQL database password |
-   | `JWT_SECRET` | 256-bit Base64 encoded secret for JWT signing |
-   | `MAIL_USERNAME` | Gmail address for sending emails |
-   | `MAIL_PASSWORD` | Gmail App Password (NOT your Gmail password) |
-
-4. **Run the application**
-   ```bash
-   mvn spring-boot:run
-   ```
-
-5. **Access the application**
-   - API: http://localhost:8080
-   - Swagger UI: http://localhost:8080/swagger-ui.html
-   - API Docs: http://localhost:8080/api-docs
-
-## 📧 Email Configuration
-
-Email notifications use Gmail SMTP with environment variables (no hardcoded credentials).
-
-**Setup Gmail App Password:**
-1. Enable 2-Factor Authentication in your Google Account
-2. Go to: Google Account → Security → App Passwords
-3. Generate a new App Password for "Mail"
-4. Set the environment variable: `MAIL_PASSWORD="your_16_char_app_password"`
-
-**Note:** Never use your actual Gmail password. Always use the generated App Password.
+| Variable | Description | Required |
+|---|---|---|
+| `DB_PASSWORD` | MySQL password | ✅ |
+| `DB_USERNAME` | MySQL username (default: `root`) | ❌ |
+| `DB_URL` | JDBC URL (default: `localhost:3306`) | ❌ |
+| `JWT_SECRET` | Base64 256-bit secret for JWT | ✅ |
+| `MAIL_USERNAME` | Gmail address for notifications | ✅ |
+| `MAIL_PASSWORD` | Gmail App Password | ✅ |
+| `CORS_ORIGINS` | Allowed CORS origins (comma-separated) | ❌ |
 
 ## 🔐 Creating Admin User
 
-By default, all registered users have `USER` role. To create an admin:
-
-**Option 1: Direct SQL**
 ```sql
 UPDATE users SET role = 'ADMIN' WHERE email = 'admin@example.com';
 ```
 
-**Option 2: Create a data initialization service** (for production)
-
-## 📊 Sample API Requests
-
-### Register User
-```bash
-curl -X POST http://localhost:8080/api/users/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123",
-    "phone": "9876543210"
-  }'
-```
-
-### Login
-```bash
-curl -X POST http://localhost:8080/api/users/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
-
-### Create Booking (with JWT)
-```bash
-curl -X POST http://localhost:8080/api/bookings \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "tripId": 1,
-    "numberOfSeats": 2
-  }'
-```
-
-## 🔮 Future AI Integration
-
-The architecture is designed for future AI integration:
-
-```
-GET /api/recommendations/{userId}
-```
-
-The modular service layer allows easy integration with:
-- External AI microservices
-- Machine learning recommendation engines
-- Natural language processing for travel queries
-
-To add AI recommendations:
-1. Create `RecommendationService.java`
-2. Call external AI API or microservice
-3. Create `RecommendationController.java`
-4. Return personalized travel suggestions
-
 ## 📝 License
 
-This project is licensed under the MIT License.
-
-## 👨‍💻 Author
-
-**TravelMate AI **
-- Final Year B.Tech CSE Project
-- 2026
-
----
-
-⭐ If you found this project helpful, please give it a star!
+MIT License — © 2026 TravelMate AI Team (Final Year B.Tech CSE Project)

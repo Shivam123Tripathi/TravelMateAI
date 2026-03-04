@@ -41,44 +41,50 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Enable CORS with custom configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                // Enable CORS with custom configuration
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
 
-            // Disable CSRF (not needed for stateless JWT auth)
-            .csrf(AbstractHttpConfigurer::disable)
+                // Disable CSRF (not needed for stateless JWT auth)
+                .csrf(AbstractHttpConfigurer::disable)
 
-            // Configure authorization rules
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
-                .requestMatchers(
-                    "/api/users/register",
-                    "/api/users/login",
-                    "/error"
-                ).permitAll()
+                // Configure authorization rules
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - no authentication required
+                        .requestMatchers(
+                                "/api/users/register",
+                                "/api/users/login",
+                                "/error")
+                        .permitAll()
 
-                // Public trip endpoints - GET operations are public
-                .requestMatchers(HttpMethod.GET, "/api/trips/**").permitAll()
+                        // Swagger / OpenAPI endpoints - public access
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs")
+                        .permitAll()
 
-                // Admin only endpoints
-                .requestMatchers(HttpMethod.POST, "/api/trips/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/trips/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/trips/**").hasRole("ADMIN")
-                .requestMatchers("/api/reports/**").hasRole("ADMIN")
+                        // Public trip endpoints - GET operations are public
+                        .requestMatchers(HttpMethod.GET, "/api/trips/**").permitAll()
 
-                // All other requests require authentication
-                .anyRequest().authenticated()
-            )
+                        // Admin only endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/trips/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/trips/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/trips/**").hasRole("ADMIN")
+                        .requestMatchers("/api/reports/**").hasRole("ADMIN")
 
-            // Stateless session management (no server-side sessions)
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
+                        // All other requests require authentication
+                        .anyRequest().authenticated())
 
-            // Set authentication provider
-            .authenticationProvider(authenticationProvider())
+                // Stateless session management (no server-side sessions)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            // Add JWT filter before UsernamePasswordAuthenticationFilter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                // Set authentication provider
+                .authenticationProvider(authenticationProvider())
+
+                // Add JWT filter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

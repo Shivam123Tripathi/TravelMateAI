@@ -3,6 +3,7 @@
 
 # Logs
 *.log
+logs/
 
 # Compiled files
 *.class
@@ -11,12 +12,25 @@
 /.idea/
 /.vscode/
 *.iml
+.project
+.classpath
+.settings/
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Environment files
 .env
+.env.local
 
-# Application properties (IMPORTANT)
+# Application properties (secrets)
 src/main/resources/application.properties
+
+# Docker volumes
+mysql-data/
+
+# Package files
+*.jar
+*.war
+!src/

@@ -58,4 +58,10 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Delete all bookings for a user (used during account deletion).
      */
     void deleteByUserId(Long userId);
+
+    /**
+     * Delete all bookings for a trip (used during trip deletion after safety
+     * checks).
+     */
+    void deleteByTripId(Long tripId);
 }

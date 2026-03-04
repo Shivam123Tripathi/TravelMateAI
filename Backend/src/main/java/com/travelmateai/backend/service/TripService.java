@@ -4,6 +4,8 @@ import com.travelmateai.backend.dto.request.TripRequest;
 import com.travelmateai.backend.dto.response.TripResponse;
 import com.travelmateai.backend.entity.Trip;
 import com.travelmateai.backend.exception.ResourceNotFoundException;
+import com.travelmateai.backend.repository.BookingRepository;
+import com.travelmateai.backend.repository.SeatLockRepository;
 import com.travelmateai.backend.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 public class TripService {
 
     private final TripRepository tripRepository;
+    private final BookingRepository bookingRepository;
+    private final SeatLockRepository seatLockRepository;
 
     /**
      * Create a new trip (Admin only)
@@ -114,13 +118,29 @@ public class TripService {
     }
 
     /**
-     * Delete trip (Admin only)
+     * Delete trip (Admin only).
+     * Checks for active bookings and seat locks before deletion.
      */
     @Transactional
     public void deleteTrip(Long tripId) {
         if (!tripRepository.existsById(tripId)) {
             throw new ResourceNotFoundException("Trip", "id", tripId);
         }
+
+        // Check for active bookings
+        List<com.travelmateai.backend.entity.Booking> activeBookings = bookingRepository.findByTripId(tripId).stream()
+                .filter(b -> b.getStatus() == com.travelmateai.backend.entity.BookingStatus.CONFIRMED)
+                .toList();
+
+        if (!activeBookings.isEmpty()) {
+            throw new com.travelmateai.backend.exception.BadRequestException(
+                    "Cannot delete trip: " + activeBookings.size() + " active booking(s) exist. Cancel them first.");
+        }
+
+        // Delete all related seat locks and cancelled bookings
+        seatLockRepository.deleteByTripId(tripId);
+        bookingRepository.deleteByTripId(tripId);
+
         tripRepository.deleteById(tripId);
         log.info("Trip deleted: {}", tripId);
     }

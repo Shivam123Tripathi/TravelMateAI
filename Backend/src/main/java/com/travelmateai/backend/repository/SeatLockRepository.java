@@ -66,4 +66,10 @@ public interface SeatLockRepository extends JpaRepository<SeatLock, Long> {
      */
     @Query("SELECT COALESCE(SUM(sl.numberOfSeats), 0) FROM SeatLock sl WHERE sl.trip.id = :tripId AND sl.status = :status")
     Integer sumLockedSeatsByTrip(@Param("tripId") Long tripId, @Param("status") SeatLockStatus status);
+
+    /**
+     * Delete all seat locks for a trip (used during trip deletion after safety
+     * checks).
+     */
+    void deleteByTripId(Long tripId);
 }
