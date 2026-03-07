@@ -22,8 +22,24 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpassword}"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-rootpassword}" ]
       interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # --- Recommendation ML Service ---
+  recommendation:
+    build:
+      context: ./recommendation-model
+      dockerfile: Dockerfile
+    container_name: travelmateai-recommendation
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')" ]
+      interval: 15s
       timeout: 5s
       retries: 5
       start_period: 30s
@@ -38,6 +54,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      recommendation:
+        condition: service_healthy
     environment:
       # Database
       DB_URL: jdbc:mysql://mysql:3306/travelmateai_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
@@ -48,6 +66,8 @@ services:
       # Email (optional — app still works without it)
       MAIL_USERNAME: ${MAIL_USERNAME:-noreply@example.com}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-placeholder}
+      # Recommendation ML service
+      RECOMMENDATION_SERVICE_URL: http://recommendation:5000
       # Spring profile
       SPRING_PROFILES_ACTIVE: prod
     ports:

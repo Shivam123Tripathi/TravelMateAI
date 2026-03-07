@@ -60,6 +60,11 @@ seat:
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4200,http://localhost:8081}
 
+# -------------------- Recommendation ML Service --------------------
+recommendation:
+  service:
+    url: ${RECOMMENDATION_SERVICE_URL:http://localhost:5000}
+
 # -------------------- Logging Configuration --------------------
 logging:
   level:
