@@ -7,29 +7,29 @@ A production-ready REST API backend for **TravelMate AI** — a smart travel ass
 ## 🚀 Features
 
 ### Authentication & Authorization
-- ✅ User registration with encrypted passwords (BCrypt)
-- ✅ JWT-based stateless authentication
-- ✅ Role-based access control (USER / ADMIN)
-- ✅ Secure endpoint protection
+-  User registration with encrypted passwords (BCrypt)
+-  JWT-based stateless authentication
+-  Role-based access control (USER / ADMIN)
+-  Secure endpoint protection
 
 ### User Management
-- ✅ Registration, login, profile update, account deletion
+-  Registration, login, profile update, account deletion
 
 ### Trip Management
-- ✅ CRUD operations (Admin-only for create/update/delete)
-- ✅ Search by destination with pagination
-- ✅ Safe deletion with booking existence checks
+-  CRUD operations (Admin-only for create/update/delete)
+-  Search by destination with pagination
+-  Safe deletion with booking existence checks
 
 ### Booking System
-- ✅ Book trips with seat availability validation
-- ✅ Seat locking system (temporary seat reservation before payment)
-- ✅ Automatic seat lock expiration via scheduled jobs
-- ✅ Booking cancellation with seat restoration
-- ✅ Email notifications (confirmation & cancellation)
+-  Book trips with seat availability validation
+-  Seat locking system (temporary seat reservation before payment)
+-  Automatic seat lock expiration via scheduled jobs
+-  Booking cancellation with seat restoration
+-  Email notifications (confirmation & cancellation)
 
 ### Admin Analytics
-- ✅ Total bookings, popular destinations, revenue reports
-- ✅ Dashboard API with typed DTOs
+-  Total bookings, popular destinations, revenue reports
+-  Dashboard API with typed DTOs
 
 ## 🛠️ Tech Stack
 
@@ -189,3 +189,4 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'admin@example.com';
 ## 📝 License
 
 MIT License — © 2026 TravelMate AI Team (Final Year B.Tech CSE Project)
+
